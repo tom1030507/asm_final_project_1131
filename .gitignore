@@ -1,0 +1,8 @@
+# 忽略 Debug 資料夾
+Debug/
+
+# 忽略特定檔案
+asm_final_project.lst
+asm_final_project.vcxproj
+asm_final_project.vcxproj.filters
+asm_final_project.vcxproj.user
