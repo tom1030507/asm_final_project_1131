@@ -26,6 +26,7 @@ point ENDS
 
 	x_cross_line BYTE "-", 0
 	y_cross_line BYTE "|", 0
+	aim_dot BYTE "o", 0
 
 
 	world BYTE WORLD_X * WORLD_Y DUP(0) ; small map
@@ -1032,48 +1033,36 @@ drawCross PROC uses ebx ecx edx
 ; Input: Nothing 
 ; Output: Nothing
 ;--------------------------------------------
-	mov edx, 0
-	mov edx, 0
-	mov pixels[SIZEOF pixels -2], dl
 	mov bl, x_cross_line
 
 	;draw x cross
 	mov dh, SCREEN_H / 2
 	mov dl, SCREEN_W / 2
 	call ctoi
-	mov edx, 0
-	sub eax, 5
-	mov ecx, 10
+	;mov edx, 0
+	sub eax, 2
+	mov ecx, 5
 x_cross_loop:
 	mov pixels[eax], bl
-	call gotoxy
-	mov edx, offset pixels
 	inc eax
 	loop x_cross_loop
 
-	
 	;draw y cross
 	mov bl, y_cross_line
-	mov dh, SCREEN_H / 2 + 3
+	mov dh, SCREEN_H / 2 + 1
 	mov dl, SCREEN_W / 2
-	push edx
-	;sub dh, 10
 	call ctoi
-	;mov edx, 0
-	mov ecx, 6
+	mov ecx, 3
 y_cross_loop:
-	pop edx
 	call ctoi
 	mov pixels[eax], bl
 	dec dh
-	push edx
-	mov edx, 0
-	call gotoxy
 	loop y_cross_loop
-	pop edx
-
-	mov edx, offset pixels
-	call writestring
+	mov bl, aim_dot
+	mov dh, SCREEN_H / 2
+	mov dl, SCREEN_W / 2
+	call ctoi
+	mov pixels[eax], bl
 	ret
 drawCross ENDP
 
