@@ -492,12 +492,12 @@ normalstop:
 	call wctoi
 	mov world[eax], 2
 generateapple:
-	mov ecx, 4
+	mov ecx, 3
 	.WHILE ecx > 0
-		mov eax, 11
+		mov eax, WORLD_X
 		call randomrange
 		mov dl, al
-		mov eax, 11
+		mov eax, WORLD_Y
 		call randomrange
 		mov dh, al
 		call wctoi
