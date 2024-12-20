@@ -24,6 +24,10 @@ point ENDS
 	zero REAL8 0.0	; Zero for FPU calculations
 	stage BYTE 0	; State (1: Game clear, 2: Return to menu)
 
+	x_cross_line BYTE "-", 0
+	y_cross_line BYTE "|", 0
+
+
 	world BYTE WORLD_X * WORLD_Y DUP(0) ; small map
 
 	; Precomputed direction vectors & unit vectors for different angles (coordinates are integers & optimized for performance)
@@ -116,9 +120,48 @@ point ENDS
 			BYTE "  G : goal", 0dh, 0ah, "  # : wall", 0dh, 0ah, 0
 	minimap_msg BYTE "Generated map :  ", 0dh, 0ah, 0
 	half_line BYTE 60 DUP (' '), 0dh, 0ah, 0
-	
-.code
+	apple_pic1 BYTE "		  /", 0dh, 0ah, "   _.,--./,--.-,", 0dh, 0ah, "  /     '''      \", 0dh, 0ah, " /                \",0dh, 0ah, "|                 |", 0dh, 0ah, "|                 |", 0dh, 0ah, " \               /", 0dh, 0ah, " \               /", 0dh, 0ah, "  \             /", 0dh, 0ah, "   \_._,.,,._,_/", 0
+	apple_pic2 BYTE "  ,--./,-.", 0dh, 0ah, " /        \", 0dh, 0ah, "|          |", 0dh, 0ah, " \        /", 0dh, 0ah, "  `._,._,'", 0
+	apple_pic3 BYTE " ,-/,-", 0dh, 0ah, "/     \", 0dh, 0ah, "\     /", 0dh, 0ah, " `._,'", 0
+	apple_pic4 BYTE " ./.", 0dh, 0ah, "-   -", 0dh, 0ah, "`._,'", 0
+	apple_pic5 BYTE "/", 0dh, 0ah, "(`)", 0
 
+;		   /
+;   _.,--./,--.-,
+;  /     '''      \
+; /                \
+;|                 | 
+;|                 |
+; \               /
+;  \             /  
+;   \_._,.,,._,_/
+
+
+
+;  ,--./,-.
+; /        \
+;|          |
+; \        /  
+;  `._,._,'
+
+
+; ,-/,-	
+;/     \      
+;\     /
+; `._,'
+
+
+; ./.	
+;-   -            
+;`._,'
+
+
+; /
+;(`)
+
+
+.code
+setConsoleOutputCP PROTO STDCALL: DWORD
 ;--------------------------------------------
 main PROC
 ; main procedure
@@ -130,10 +173,12 @@ menu_loop:
 game_init:
 	call gameinit
 game_loop:
+
 	call getinput
 	call makefloor
 	call makewall
 	call campus
+	call drawCross
 	call render
 	cmp stage, 1	;1: game clear
 		je game_clear
@@ -979,6 +1024,58 @@ intersect_ret:
 	mov eax, ebx
 	ret
 intersect ENDP
+
+
+;--------------------------------------------
+drawCross PROC uses ebx ecx edx
+; outputs screen buffer(pixels)
+; Input: Nothing 
+; Output: Nothing
+;--------------------------------------------
+	mov edx, 0
+	mov edx, 0
+	mov pixels[SIZEOF pixels -2], dl
+	mov bl, x_cross_line
+
+	;draw x cross
+	mov dh, SCREEN_H / 2
+	mov dl, SCREEN_W / 2
+	call ctoi
+	mov edx, 0
+	sub eax, 5
+	mov ecx, 10
+x_cross_loop:
+	mov pixels[eax], bl
+	call gotoxy
+	mov edx, offset pixels
+	inc eax
+	loop x_cross_loop
+
+	
+	;draw y cross
+	mov bl, y_cross_line
+	mov dh, SCREEN_H / 2 + 3
+	mov dl, SCREEN_W / 2
+	push edx
+	;sub dh, 10
+	call ctoi
+	;mov edx, 0
+	mov ecx, 6
+y_cross_loop:
+	pop edx
+	call ctoi
+	mov pixels[eax], bl
+	dec dh
+	push edx
+	mov edx, 0
+	call gotoxy
+	loop y_cross_loop
+	pop edx
+
+	mov edx, offset pixels
+	call writestring
+	ret
+drawCross ENDP
 
 ;--------------------------------------------
 ctoi PROC uses ebx ecx edx
