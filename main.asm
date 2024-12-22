@@ -304,6 +304,8 @@ point ENDS
 	byte "vvvvvvvvvvvvvvv...vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",0dh
 	byte "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",0
 
+
+
 .code
 setConsoleOutputCP PROTO STDCALL: DWORD
 ;--------------------------------------------
@@ -738,9 +740,8 @@ gameclear PROC uses edx
 	call writestring
 	mov edx, 1030h
 	call gotoxy
-	mov eax, 3000
+	mov eax, 5000
 	call delay
-	call waitmsg
 	ret
 gameclear ENDP
 
@@ -1539,6 +1540,7 @@ shoot PROC uses eax ebx ecx edx esi edi
 	mov eax, apple_position
 	.IF shoot_flag == 1
 		mov world[eax], 0
+		dec apple_num
 	.ENDIF
 	ret
 shoot endp
