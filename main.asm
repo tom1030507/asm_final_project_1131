@@ -145,6 +145,7 @@ point ENDS
 			 BYTE "Q : exit to menu", 0dh, 0ah
 			 BYTE "R : reset current position", 0dh, 0ah
 			 BYTE "H : show this message", 0dh, 0ah
+			 BYTE "? : shoot", 0dh, 0ah
 			 BYTE "Map symbols:", 0dh, 0ah
 			 BYTE "  # : wall", 0dh, 0ah
 			 BYTE "  O : current position", 0dh, 0ah
@@ -248,16 +249,16 @@ point ENDS
 	BYTE "vvvvvvvvvvvvv...:=+**##########*+-...vvvvvvvvvvvvv", 0dh
 	BYTE "vvvvvvvvvvvvvvv...................vvvvvvvvvvvvvvvv", 0
 
-	flag_pic20 byte "vvvvv.::..vvvvvvvvv", 0dh
+	flag_pic20 byte 10, 3, "vvvvv.:*:..vvvvvvvvv", 0dh
 	byte "vvvvvv:%#######+:vvv", 0dh
-	byte "vvvvvv:%%%-.vvvvvvv", 0dh
+	byte "vvvvvv:%%%*-.vvvvvvv", 0dh
 	byte "vvvvvv:..vvvvvvvvvvv", 0dh
 	byte "vvvvvv:.vvvvvvvvvvvv", 0dh
 	byte "vvvvvv:.vvvvvvvvvvvv", 0dh
 	byte "vvvvvv..v", 0
 
-	flag_pic30 byte "vvvvvvvvv:-vvvvvvvvvvvvvvvvvvv",0dh
-	byte "vvvvvvvvv.##-:..vvvvvvvvvvvvv",0dh
+	flag_pic30 byte 15, 5, "vvvvvvvvv:-vvvvvvvvvvvvvvvvvvv",0dh
+	byte "vvvvvvvvv.##*-:..vvvvvvvvvvvvv",0dh
 	byte "vvvvvvvvv.#%###########=.vvvvv",0dh
 	byte "vvvvvvvvv.#%#######+-.vvvvvvvv",0dh
 	byte "vvvvvvvvv.#%%%%#:.vvvvvvvvvvvv",0dh
@@ -268,10 +269,10 @@ point ENDS
 	byte "vvvvvvvvv.:vvvvvvvvvvvvvvvvvvv",0dh
 	byte "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",0
 
-	flag_pic40 byte "vvvvvvvvvvvv:+..vvvvvvvvvvvvvvvvvvvvvvvv", 0dh
-	byte "vvvvvvvvvvvv.=%#=:..vvvvvvvvvvvvvvvvvvv", 0dh
-	byte "vvvvvvvvvvvv.=%%###########+-:.vvvvvvvv", 0dh
-	byte "vvvvvvvvvvvv.=%##############%%:vvvvvvv", 0dh
+	flag_pic40 byte 20, 7, "vvvvvvvvvvvv:+..vvvvvvvvvvvvvvvvvvvvvvvv", 0dh
+	byte "vvvvvvvvvvvv.=%#*=:..vvvvvvvvvvvvvvvvvvv", 0dh
+	byte "vvvvvvvvvvvv.=%%###########*+-:.vvvvvvvv", 0dh
+	byte "vvvvvvvvvvvv.=%##############%%*:vvvvvvv", 0dh
 	byte "vvvvvvvvvvvv.=%%%########+:..vvvvvvvvvvv", 0dh
 	byte "vvvvvvvvvvvv.=%%%%%%#*=.vvvvvvvvvvvvvvvv", 0dh
 	byte "vvvvvvvvvvvv.=%%%#=.vvvvvvvvvvvvvvvvvvvv", 0dh
@@ -284,15 +285,15 @@ point ENDS
 	byte "vvvvvvvvvvvv.:vvvvvvvvvvvvvvvvvvvvvvvvvv", 0dh
 	byte "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv", 0
 
-	flag_pic50 byte "vvvvvvvvvvvvvvv.::.vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",0dh
+	flag_pic50 byte 25, 10, "vvvvvvvvvvvvvvv.::.vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",0dh
 	byte "vvvvvvvvvvvvvvv.-+:..vvvvvvvvvvvvvvvvvvvvvvvvvvvvv",0dh
-	byte "vvvvvvvvvvvvvvv.-#%%%=-::..........vvvvvvvvvvvvvv",0dh
-	byte "vvvvvvvvvvvvvvv.:#%%##############=-:..vvvvvvvvvv",0dh
+	byte "vvvvvvvvvvvvvvv.-#%%%*=-::..........vvvvvvvvvvvvvv",0dh
+	byte "vvvvvvvvvvvvvvv.:#%%##############*=-:..vvvvvvvvvv",0dh
 	byte "vvvvvvvvvvvvvvv.:#%#################%%#+:.vvvvvvvv",0dh
-	byte "vvvvvvvvvvvvvvv.:#%%#############+-:...vvvvvvvvvv",0dh
-	byte "vvvvvvvvvvvvvvv.-#%%%%#######=:..vvvvvvvvvvvvvvvv",0dh
-	byte "vvvvvvvvvvvvvvv.-#%%%%%%%%-..vvvvvvvvvvvvvvvvvvvv",0dh
-	byte "vvvvvvvvvvvvvvv.-#%%%%-..vvvvvvvvvvvvvvvvvvvvvvvv",0dh
+	byte "vvvvvvvvvvvvvvv.:#%%#############*+-:...vvvvvvvvvv",0dh
+	byte "vvvvvvvvvvvvvvv.-#%%%%#######*=:..vvvvvvvvvvvvvvvv",0dh
+	byte "vvvvvvvvvvvvvvv.-#%%%%%%%%*-..vvvvvvvvvvvvvvvvvvvv",0dh
+	byte "vvvvvvvvvvvvvvv.-#%%%%*-..vvvvvvvvvvvvvvvvvvvvvvvv",0dh
 	byte "vvvvvvvvvvvvvvv.::vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",0dh
 	byte "vvvvvvvvvvvvvvv.::vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",0dh
 	byte "vvvvvvvvvvvvvvv.::vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",0dh
@@ -314,17 +315,16 @@ main PROC
 ; Input: nothing
 ; Output: nothing
 ;--------------------------------------------
-
 menu_loop:
 	call menusplash	;press any key to start
 game_init:
 	call gameinit
 game_loop:
-
 	call getinput
 	call makefloor
 	call makewall
 	call makeapple
+	call makeflag
 	call campus
 	call drawCross
 	call render
@@ -465,6 +465,7 @@ gameinit PROC uses eax ecx edx
 ; Input: nothing
 ; Output: nothing
 ;--------------------------------------------
+	mov apple_num, 3
 	call clrscr
 	mov goal.x, 0
 	mov goal.y, 0
@@ -654,7 +655,7 @@ generateapple:
 		mov dh, al
 		call wctoi
 		mov al, world[eax]
-		.IF al == 0 && edx != 0Bh
+		.IF al == 0 && eax != 0Bh
 			call wctoi
 			mov world[eax], 4
 			dec ecx
@@ -727,22 +728,23 @@ checkcell PROC uses ebx edx
 	.ENDIF
 	ret
 checkcell ENDP
-
 ;--------------------------------------------
 gameclear PROC uses edx
 ; outputs stage clear message
 ; Input: Nothing 
 ; Output: Nothing
 ;--------------------------------------------
-	mov edx, 0d00h
-	call gotoxy
-	mov edx, offset clear_msg
-	call writestring
-	mov edx, 1030h
-	call gotoxy
-	mov eax, 5000
-	call delay
-	ret
+    mov edx, 0 
+    call gotoxy
+    mov edx, offset white_msg
+    call writestring
+    mov edx, 0 
+    call gotoxy
+    mov edx, offset clear_msg
+    call writestring
+    call delay
+    call waitmsg
+    ret
 gameclear ENDP
 
 ;--------------------------------------------
@@ -1536,7 +1538,200 @@ done:
     ret
 fillapple endp
 
-shoot PROC uses eax ebx ecx edx esi edi
+makeflag PROC uses eax ebx ecx edx esi edi
+; create flag in screen buffer (use ray-casting)
+; Input: Nothing 
+; Output: Nothing
+;--------------------------------------------
+	.IF apple_num != 0
+		ret
+	.ENDIF
+
+    mov esi, camd
+    sub esi, SCREEN_W/2
+    cmp esi, 0
+    mov edi, 0
+    jl w_negative
+    jmp w_positive
+w_negative:
+    add esi, 360
+w_positive:
+    mov dl, SCREEN_W-1
+
+    mov ebx, 0
+    push ebx
+w_loop:
+    cmp dl, 0
+    jl w_loop_done    ;(counter)loop through fov angles and shoot rays
+        .IF esi >= 360
+            sub esi, 360
+        .ENDIF
+        mov eax, esi    ;save angle to eax
+        call shootray_for_flag    ;shoot ray to current direction vector
+        mov eax, ebx    ;save distance to eax
+        cmp ebx, 0
+        jl no_intersect
+            .if ecx == 2
+                pop ebx
+                .if bl == 0
+                    mov bl, dl    ;bl is right apple
+                .endif
+                mov bh, dl        ;bh is left apple
+                push ebx
+            .endif
+no_intersect:
+        inc esi
+        dec dl
+    jmp w_loop
+w_loop_done:
+    pop ebx
+    
+    .if bl != bh
+        mov cl, bl
+        sub cl, bh
+
+        mov dh, SCREEN_H/2
+        mov dl, bh
+        add dl, bl
+        shr dl, 1
+        ; 50, 40, 30, 20
+        .if cl > 20
+            .if cl > 50
+                mov ecx, 4
+            .elseif cl > 40
+                mov ecx, 3
+            .elseif cl > 30
+                mov ecx, 2
+			.else
+				mov ecx, 1
+            .endif
+            call fillflag
+        .endif
+    .endif
+    ret
+makeflag ENDP
+
+;--------------------------------------------
+shootray_for_flag PROC uses eax edx esi ebp
+; cast ray to selected angle 
+; Input: eax=angle
+; Output: ebx=max length, ecx=type, edi=2nd length
+;--------------------------------------------
+mov esi, eax
+	mov ebx, -1
+	mov ecx, 0
+	mov edi, 0
+	;loop through all blocks
+	mov edx, 0
+	.WHILE dh < WORLD_Y	;loop y
+		.WHILE dl < WORLD_X ;loop x
+			call wctoi	;index is in eax
+			mov position, eax
+			movzx eax, world[eax]
+			mov ebp, eax
+			.IF  eax == 1 || eax == 2	; is a block
+				call wctorc
+				;south
+				mov eax, tmp[0*TYPE vector].x
+				mov tmp[1*TYPE vector].x, eax
+				mov eax, tmp[0*TYPE vector].y
+				mov tmp[1*TYPE vector].y, eax
+				mov eax, tmp[1*TYPE vector].x
+				add eax, BLOCK_SIZE
+				mov tmp[1*TYPE vector].x, eax
+				call intersect
+				.IF eax < ebx || ebx == -1
+					mov edi, position
+					mov ebx, eax
+					mov ecx, ebp
+				.ENDIF
+				;east
+				add tmp[0*TYPE vector].x, BLOCK_SIZE
+				add tmp[1*TYPE vector].y, BLOCK_SIZE
+				call intersect
+				.IF eax < ebx || ebx == -1
+					mov edi, position
+					mov ebx, eax
+					mov ecx, ebp
+				.ENDIF
+				;south
+				add tmp[0*TYPE vector].y, BLOCK_SIZE
+				sub tmp[1*TYPE vector].x, BLOCK_SIZE
+				call intersect
+				.IF eax < ebx || ebx == -1
+					mov edi, position
+					mov ebx, eax
+					mov ecx, ebp
+				.ENDIF
+				;west
+				sub tmp[0*TYPE vector].x, BLOCK_SIZE
+				sub tmp[1*TYPE vector].y, BLOCK_SIZE
+				call intersect
+				.IF eax < ebx || ebx == -1
+					mov edi, position
+					mov ebx, eax
+					mov ecx, ebp
+				.ENDIF
+			.ENDIF
+			inc dl
+		.ENDW
+		mov dl, 0
+		inc dh
+	.ENDW
+	ret
+shootray_for_flag ENDP
+
+fillflag proc uses eax esi
+; fill apple in screen buffer (use ray-casting)
+; Input: edx(center coordinate), ecx(apple type) 
+; Output: Nothing
+;--------------------------------------------
+	; 將圖案字串的地址載入 esi
+	.if	ecx == 1
+		lea esi, flag_pic20  
+	.elseif ecx == 2
+		lea esi, flag_pic30
+	.elseif ecx == 3
+		lea esi, flag_pic40
+	.elseif ecx == 4
+		lea esi, flag_pic50
+	.endif
+	
+	sub dl, [esi]
+	inc esi
+	sub dh, [esi]
+	inc esi
+
+	mov bh, dl
+loop_h:
+    lodsb                   ; 載入字元到 AL
+	mov bl, al
+
+	cmp bl, 0				; 讀完了
+	je done
+
+    cmp bl, 0dh             ; 檢查是否是換行符
+    je new_line             ; 如果是換行符，跳到新行
+
+	cmp bl, 'v'
+	je skip
+
+    ; 計算索引
+    call ctoi               ; 呼叫 ctoi，結果存入 EAX
+
+    mov pixels[eax], bl     ; 將圖案字元寫入 pixels 陣列
+skip:
+	inc dl
+	jmp loop_h 
+new_line:
+    inc dh                  ; y 值加 1
+	mov dl, bh
+    jmp loop_h				; 繼續處理
+done:
+    ret
+fillflag endp
+
+shoot PROC uses eax
 	mov eax, apple_position
 	.IF shoot_flag == 1
 		mov world[eax], 0
@@ -1544,6 +1739,5 @@ shoot PROC uses eax ebx ecx edx esi edi
 	.ENDIF
 	ret
 shoot endp
-
 
 END main
