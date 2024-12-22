@@ -655,7 +655,7 @@ generateapple:
 		mov dh, al
 		call wctoi
 		mov al, world[eax]
-		.IF al == 0 && eax != 0Bh
+		.IF al == 0 && edx != 0101h
 			call wctoi
 			mov world[eax], 4
 			dec ecx
