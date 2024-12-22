@@ -22,7 +22,10 @@ point ENDS
     floor_t BYTE "    .^",0      ; Floor texture
     pixels BYTE SCREEN_H-1 DUP(SCREEN_W DUP(?), 0dh, 0ah), SCREEN_W DUP(?),0    ; Pixel buffer
 	zero REAL8 0.0	; Zero for FPU calculations
-	stage BYTE 0	; State (1: Game clear, 2: Return to menu)
+	stage BYTE 0	; State (1: Game clear, 2: Return to menu)\
+	shoot_flag BYTE 0	; Shoot flag
+	position DWORD 0	; Current position
+	apple_position DWORD 0 ; Apple position
 
 	x_cross_line BYTE "-", 0
 	y_cross_line BYTE "|", 0
@@ -111,55 +114,195 @@ point ENDS
 
     tmp vector 10 DUP(<>)     ; Storage for vector calculations
 	goal point <>	 ; Goal point vector
+	apple_num BYTE 3	; Number of apples
 
 	; Strings used for display
-	clear_msg BYTE SCREEN_W DUP('='),0dh,0ah, SCREEN_W DUP(' '),0dh,0ah, 54 DUP(' '), "stage clear!", SCREEN_W-66 DUP (' '), 0dh, 0ah,  SCREEN_W DUP(' '), 0dh, 0ah, SCREEN_W DUP('='), 0
-	title_msg BYTE 13 DUP (SCREEN_W DUP ('.'), 0dh, 0ah), SCREEN_W DUP (' '), 0dh, 0ah, 56 DUP (' '), "3D MAZE", SCREEN_W-63 DUP (' '), 0dh, 0ah, SCREEN_W DUP (' '), 0dh, 0ah, 13 DUP (SCREEN_W DUP ('.'), 0dh, 0ah), SCREEN_W DUP ('.'), 0
-	help_msg BYTE "INSTRUCTIONS:", 0dh, 0ah, 0ah, "W,A,S,D : move", 0dh, 0ah, "<,> : change camera angle", 0dh, 0ah
-			BYTE "M : view minimap", 0dh, 0ah, "Q : exit to menu", 0dh, 0ah, "R : reset current position", 0dh, 0ah
-			BYTE "H : show this message", 0dh, 0ah, "  Map symbols:", 0dh, 0ah, "  O : current position", 0dh, 0ah
-			BYTE "  G : goal", 0dh, 0ah, "  # : wall", 0dh, 0ah, 0
+	white_msg BYTE 29 DUP (SCREEN_W DUP(' '),0dh,0ah), SCREEN_W DUP(' '), 0
+	clear_msg BYTE 10 DUP (SCREEN_W DUP('.'),0dh,0ah)
+		      BYTE  "                                   $$$$$$\  $$\       $$$$$$$$\  $$$$$$\  $$$$$$$\  ", 0dh, 0ah
+              BYTE  "                                  $$  __$$\ $$ |      $$  _____|$$  __$$\ $$  __$$\ ", 0dh, 0ah
+              BYTE  "                                  $$ /  \__|$$ |      $$ |      $$ /  $$ |$$ |  $$ |", 0dh, 0ah
+              BYTE  "                                  $$ |      $$ |      $$$$$\    $$$$$$$$ |$$$$$$$  |", 0dh, 0ah
+              BYTE  "                                  $$ |      $$ |      $$  __|   $$  __$$ |$$  __$$< ", 0dh, 0ah
+              BYTE  "                                  $$ |  $$\ $$ |      $$ |      $$ |  $$ |$$ |  $$ |", 0dh, 0ah
+              BYTE  "                                  \$$$$$$  |$$$$$$$$\ $$$$$$$$\ $$ |  $$ |$$ |  $$ |", 0dh, 0ah
+              BYTE  "                                   \______/ \________|\________|\__|  \__|\__|  \__|", 0dh, 0ah
+			  BYTE 9 DUP (SCREEN_W DUP('.'),0dh,0ah), 47 DUP (' '), 0
+	title_msg BYTE 10 DUP (SCREEN_W DUP('.'),0dh,0ah)
+		      BYTE  "              $$$$$$$$\ $$\   $$\ $$$$$$$$\        $$$$$$\   $$$$$$\  $$$$$$$\  $$\   $$\ $$$$$$$$\ $$$$$$$\  ", 0dh, 0ah
+              BYTE  "              \__$$  __|$$ |  $$ |$$  _____|      $$  __$$\ $$  __$$\ $$  __$$\ $$$\  $$ |$$  _____|$$  __$$\ ", 0dh, 0ah
+              BYTE  "                 $$ |   $$ |  $$ |$$ |            $$ /  \__|$$ /  $$ |$$ |  $$ |$$$$\ $$ |$$ |      $$ |  $$ |", 0dh, 0ah
+              BYTE  "                 $$ |   $$$$$$$$ |$$$$$\          $$ |      $$ |  $$ |$$$$$$$  |$$ $$\$$ |$$$$$\    $$$$$$$  |", 0dh, 0ah
+              BYTE  "                 $$ |   $$  __$$ |$$  __|         $$ |      $$ |  $$ |$$  __$$< $$ \$$$$ |$$  __|   $$  __$$< ", 0dh, 0ah
+              BYTE  "                 $$ |   $$ |  $$ |$$ |            $$ |  $$\ $$ |  $$ |$$ |  $$ |$$ |\$$$ |$$ |      $$ |  $$ |", 0dh, 0ah
+              BYTE  "                 $$ |   $$ |  $$ |$$$$$$$$\       \$$$$$$  | $$$$$$  |$$ |  $$ |$$ | \$$ |$$$$$$$$\ $$ |  $$ |", 0dh, 0ah
+              BYTE  "                 \__|   \__|  \__|\________|       \______/  \______/ \__|  \__|\__|  \__|\________|\__|  \__|", 0dh, 0ah
+			  BYTE 10 DUP (SCREEN_W DUP('.'),0dh,0ah), 47 DUP (' '), 0
+	help_msg BYTE "INSTRUCTIONS:", 0dh, 0ah, 0ah
+			 BYTE "W,A,S,D : move", 0dh, 0ah
+			 BYTE "<,> : change camera angle", 0dh, 0ah
+			 BYTE "M : view minimap", 0dh, 0ah
+			 BYTE "Q : exit to menu", 0dh, 0ah
+			 BYTE "R : reset current position", 0dh, 0ah
+			 BYTE "H : show this message", 0dh, 0ah
+			 BYTE "Map symbols:", 0dh, 0ah
+			 BYTE "  # : wall", 0dh, 0ah
+			 BYTE "  O : current position", 0dh, 0ah
+			 BYTE "  A : apple", 0dh, 0ah
+			 BYTE "  G : goal", 0dh, 0ah, 0
+
 	minimap_msg BYTE "Generated map :  ", 0dh, 0ah, 0
 	half_line BYTE 60 DUP (' '), 0dh, 0ah, 0
-	apple_pic1 BYTE "		  /", 0dh, 0ah, "   _.,--./,--.-,", 0dh, 0ah, "  /     '''      \", 0dh, 0ah, " /                \",0dh, 0ah, "|                 |", 0dh, 0ah, "|                 |", 0dh, 0ah, " \               /", 0dh, 0ah, " \               /", 0dh, 0ah, "  \             /", 0dh, 0ah, "   \_._,.,,._,_/", 0
-	apple_pic2 BYTE "  ,--./,-.", 0dh, 0ah, " /        \", 0dh, 0ah, "|          |", 0dh, 0ah, " \        /", 0dh, 0ah, "  `._,._,'", 0
-	apple_pic3 BYTE " ,-/,-", 0dh, 0ah, "/     \", 0dh, 0ah, "\     /", 0dh, 0ah, " `._,'", 0
-	apple_pic4 BYTE " ./.", 0dh, 0ah, "-   -", 0dh, 0ah, "`._,'", 0
-	apple_pic5 BYTE "/", 0dh, 0ah, "(`)", 0
 
-;		   /
-;   _.,--./,--.-,
-;  /     '''      \
-; /                \
-;|                 | 
-;|                 |
-; \               /
-;  \             /  
-;   \_._,.,,._,_/
+	apple_pic1 BYTE 2, 1, "v/v", 0dh,
+	"(,)", 0
 
+	apple_pic2 BYTE 3, 2, "v,-/,-v", 0dh, 
+	"/     \", 0dh, 
+	"\     /", 0dh, 
+	"v`._,'v", 0
+
+	apple_pic3 BYTE 6, 2, "vv,--./,-.vv", 0dh, 
+	"v/        \v", 0dh,
+	"|          |", 0dh,
+	"v\        /v", 0dh,
+	"vv`._,._,'vv", 0
 
 
-;  ,--./,-.
-; /        \
-;|          |
-; \        /  
-;  `._,._,'
+	apple_pic4 BYTE 10, 5
+	BYTE "vvvvvvvvv..vvvvvvvvv", 0dh
+	BYTE "vvvvv....::....vvvvv", 0dh 
+	BYTE "vvvv:**+--=-=++:.vvv", 0dh 
+	BYTE "vv.**++=--=+=++**:vv", 0dh 
+	BYTE "v.*#***+**#*******.v", 0dh 
+	BYTE "v.##****####****##.v", 0dh 
+	BYTE "vv+****###********.v", 0dh 
+	BYTE "vv.+******+**++++:vv", 0dh 
+	BYTE "vvv.++****+*++*+..vv", 0dh 
+	BYTE "vvvv.-*#******-.vvvv", 0dh 
+	BYTE "vvvvv..::::::..vvvvv", 0
 
 
-; ,-/,-	
-;/     \      
-;\     /
-; `._,'
+	apple_pic5 BYTE 15, 8 
+	BYTE "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv", 0dh
+	BYTE "vvvvvvvvvvvvvv::.vvvvvvvvvvvvv", 0dh
+	BYTE "vvvvvvvvv...::--...vvvvvvvvvvv", 0dh
+	BYTE "vvvvvv.-***+---=-=++++-.vvvvvv", 0dh
+	BYTE "vvvv.-**+++=-------==++*+..vvv", 0dh
+	BYTE "vvv.+##*++===+++*+++++****.vvv", 0dh
+	BYTE "vv.=%##***++***#*********#*.vv", 0dh
+	BYTE "vv.###******######******###.vv", 0dh
+	BYTE "vv.*##**###########*****###.vv", 0dh
+	BYTE "vvv-#*****#*##*#**********+.vv", 0dh
+	BYTE "vvvv+**************++++++*.vvv", 0dh
+	BYTE "vvvv.=++*******+++++++++=:.vvv", 0dh
+	BYTE "vvvv..=++*******+*+++**+..vvvv", 0dh
+	BYTE "vvvvvvv:+************+:vvvvvvv", 0dh
+	BYTE "vvvvvvv..:=**#####*+:..vvvvvvv", 0dh
+	BYTE "vvvvvvvvvv..........vvvvvvvvvv", 0
 
+	apple_pic6 BYTE 20, 10 
+	BYTE "vvvvvvvvvvvvvvvvvv.*%vvvvvvvvvvvvvvvvvvv", 0dh
+	BYTE "vvvvvvvvvvvvvvv.....#vvvvvvvvvvvvvvvvvvv", 0dh
+	BYTE "vvvvvvvvv..=***+-:-:#---+=-::..vvvvvvvvv", 0dh
+	BYTE "vvvvvvv.=***+=+++=++=-----==+++=.vvvvvvv", 0dh
+	BYTE "vvvvv..=***+=++=-:::::----=++++**=.vvvvv", 0dh
+	BYTE "vvvvv.###*++==-===+++++++==+++****+.vvvv", 0dh
+	BYTE "vvvv.%##**+*+++++********+++++****#:vvvv", 0dh
+	BYTE "vvvv=%##***+++********************#*.vvv", 0dh
+	BYTE "vvvv+###***+***#*###**##*********###.vvv", 0dh
+	BYTE "vvvv=###*****#*##**####*********#*##.vvv", 0dh
+	BYTE "vvvv:#*******###*##***#*#***********.vvv", 0dh
+	BYTE "vvvv.#*****+***************+++++***:vvvv", 0dh
+	BYTE "vvvvv.*+*****+*+++**++++*++++++++*+.vvvv", 0dh
+	BYTE "vvvvv.:++++++***+*++++++++++++++==.vvvvv", 0dh
+	BYTE "vvvvvvv-++*++++***++++*+++++++++-.vvvvvv", 0dh
+	BYTE "vvvvvvvv.+++******+++++++++*+++:.vvvvvvv", 0dh
+	BYTE "vvvvvvvvv.=************+*****-.vvvvvvvvv", 0dh
+	BYTE "vvvvvvvvvv..-*########**##*-..vvvvvvvvvv", 0dh
+	BYTE "vvvvvvvvvvv.....:::::::::...vvvvvvvvvvvv", 0dh
+	BYTE "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv", 0
 
-; ./.	
-;-   -            
-;`._,'
+	apple_pic7 BYTE 25, 11
+	BYTE "vvvvvvvvvvvvvvvvvvvvvvvv-#vvvvvvvvvvvvvvvvvvvvvvvv", 0dh
+	BYTE "vvvvvvvvvvvvvvvv...:::::-#:...vvvvvvvvvvvvvvvvvvvv", 0dh
+	BYTE "vvvvvvvvvvv...=****+-::-:*---=++=-:....vvvvvvvvvvv", 0dh
+	BYTE "vvvvvvvvvv.**#*+++++=----*+==---==+++**..vvvvvvvvv", 0dh
+	BYTE "vvvvvvvv.-+#**+++++=-----:::::--===+++***:.vvvvvvv", 0dh
+	BYTE "vvvvvvv.+##**++++==--------==+====++******=.vvvvvv", 0dh
+	BYTE "vvvvvv:#%%#*++++====+++++****+++++++******#=vvvvvv", 0dh
+	BYTE "vvvvv.*%###******+++******#*****+++*******##.vvvvv", 0dh
+	BYTE "vvvvv-%#####*****+********##*************###*.vvvv", 0dh
+	BYTE "vvvvv+%###*****+****##########**********#*##%.vvvv", 0dh
+	BYTE "vvvvv=%###*********#*####*####*********######.vvvv", 0dh
+	BYTE "vvvvv-%###***#*#########*######********#*####.vvvv", 0dh
+	BYTE "vvvvv.###********########*##**#********##**#+.vvvv", 0dh
+	BYTE "vvvvvv+#******+***********#***********+*****.vvvvv", 0dh
+	BYTE "vvvvvv:#*************************++++++++**=vvvvvv", 0dh
+	BYTE "vvvvvvv:++***************++*+*++++++++++++=.vvvvvv", 0dh
+	BYTE "vvvvvvvv:++**+*********++*+++++++++++++++-.vvvvvvv", 0dh
+	BYTE "vvvvvvvv.:+++*+++******+**++*+++++++++++-.vvvvvvvv", 0dh
+	BYTE "vvvvvvvvv..+++*********+**++*+*+++****+:.vvvvvvvvv", 0dh
+	BYTE "vvvvvvvvvvv.-+****************+******:.vvvvvvvvvvv", 0dh
+	BYTE "vvvvvvvvvvvv..-+#####*##**##*****#+:.vvvvvvvvvvvvv", 0dh
+	BYTE "vvvvvvvvvvvvv...:=+**##########*+-...vvvvvvvvvvvvv", 0dh
+	BYTE "vvvvvvvvvvvvvvv...................vvvvvvvvvvvvvvvv", 0
 
+	flag_pic20 byte "vvvvv.::..vvvvvvvvv", 0dh
+	byte "vvvvvv:%#######+:vvv", 0dh
+	byte "vvvvvv:%%%-.vvvvvvv", 0dh
+	byte "vvvvvv:..vvvvvvvvvvv", 0dh
+	byte "vvvvvv:.vvvvvvvvvvvv", 0dh
+	byte "vvvvvv:.vvvvvvvvvvvv", 0dh
+	byte "vvvvvv..v", 0
 
-; /
-;(`)
+	flag_pic30 byte "vvvvvvvvv:-vvvvvvvvvvvvvvvvvvv",0dh
+	byte "vvvvvvvvv.##-:..vvvvvvvvvvvvv",0dh
+	byte "vvvvvvvvv.#%###########=.vvvvv",0dh
+	byte "vvvvvvvvv.#%#######+-.vvvvvvvv",0dh
+	byte "vvvvvvvvv.#%%%%#:.vvvvvvvvvvvv",0dh
+	byte "vvvvvvvvv.:...vvvvvvvvvvvvvvvv",0dh
+	byte "vvvvvvvvv.:vvvvvvvvvvvvvvvvvvv",0dh
+	byte "vvvvvvvvv.:vvvvvvvvvvvvvvvvvvv",0dh
+	byte "vvvvvvvvv.:vvvvvvvvvvvvvvvvvvv",0dh
+	byte "vvvvvvvvv.:vvvvvvvvvvvvvvvvvvv",0dh
+	byte "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",0
 
+	flag_pic40 byte "vvvvvvvvvvvv:+..vvvvvvvvvvvvvvvvvvvvvvvv", 0dh
+	byte "vvvvvvvvvvvv.=%#=:..vvvvvvvvvvvvvvvvvvv", 0dh
+	byte "vvvvvvvvvvvv.=%%###########+-:.vvvvvvvv", 0dh
+	byte "vvvvvvvvvvvv.=%##############%%:vvvvvvv", 0dh
+	byte "vvvvvvvvvvvv.=%%%########+:..vvvvvvvvvvv", 0dh
+	byte "vvvvvvvvvvvv.=%%%%%%#*=.vvvvvvvvvvvvvvvv", 0dh
+	byte "vvvvvvvvvvvv.=%%%#=.vvvvvvvvvvvvvvvvvvvv", 0dh
+	byte "vvvvvvvvvvvv.-vvvvvvvvvvvvvvvvvvvvvvvvvv", 0dh
+	byte "vvvvvvvvvvvv.-vvvvvvvvvvvvvvvvvvvvvvvvvv", 0dh
+	byte "vvvvvvvvvvvv.-vvvvvvvvvvvvvvvvvvvvvvvvvv", 0dh
+	byte "vvvvvvvvvvvv.-vvvvvvvvvvvvvvvvvvvvvvvvvv", 0dh
+	byte "vvvvvvvvvvvv.-vvvvvvvvvvvvvvvvvvvvvvvvvv", 0dh
+	byte "vvvvvvvvvvvv.-vvvvvvvvvvvvvvvvvvvvvvvvvv", 0dh
+	byte "vvvvvvvvvvvv.:vvvvvvvvvvvvvvvvvvvvvvvvvv", 0dh
+	byte "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv", 0
+
+	flag_pic50 byte "vvvvvvvvvvvvvvv.::.vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",0dh
+	byte "vvvvvvvvvvvvvvv.-+:..vvvvvvvvvvvvvvvvvvvvvvvvvvvvv",0dh
+	byte "vvvvvvvvvvvvvvv.-#%%%=-::..........vvvvvvvvvvvvvv",0dh
+	byte "vvvvvvvvvvvvvvv.:#%%##############=-:..vvvvvvvvvv",0dh
+	byte "vvvvvvvvvvvvvvv.:#%#################%%#+:.vvvvvvvv",0dh
+	byte "vvvvvvvvvvvvvvv.:#%%#############+-:...vvvvvvvvvv",0dh
+	byte "vvvvvvvvvvvvvvv.-#%%%%#######=:..vvvvvvvvvvvvvvvv",0dh
+	byte "vvvvvvvvvvvvvvv.-#%%%%%%%%-..vvvvvvvvvvvvvvvvvvvv",0dh
+	byte "vvvvvvvvvvvvvvv.-#%%%%-..vvvvvvvvvvvvvvvvvvvvvvvv",0dh
+	byte "vvvvvvvvvvvvvvv.::vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",0dh
+	byte "vvvvvvvvvvvvvvv.::vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",0dh
+	byte "vvvvvvvvvvvvvvv.::vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",0dh
+	byte "vvvvvvvvvvvvvvv.::vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",0dh
+	byte "vvvvvvvvvvvvvvv.::vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",0dh
+	byte "vvvvvvvvvvvvvvv.::vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",0dh
+	byte "vvvvvvvvvvvvvvv.::vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",0dh
+	byte "vvvvvvvvvvvvvvv.::vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",0dh
+	byte "vvvvvvvvvvvvvvv...vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",0dh
+	byte "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",0
 
 .code
 setConsoleOutputCP PROTO STDCALL: DWORD
@@ -169,6 +312,7 @@ main PROC
 ; Input: nothing
 ; Output: nothing
 ;--------------------------------------------
+
 menu_loop:
 	call menusplash	;press any key to start
 game_init:
@@ -178,6 +322,7 @@ game_loop:
 	call getinput
 	call makefloor
 	call makewall
+	call makeapple
 	call campus
 	call drawCross
 	call render
@@ -225,7 +370,11 @@ map_loop:
 			.ELSEIF al == 1
 				mov eax, '#'
 			.ELSEIF al == 2
-				mov eax, 'G'
+				.IF apple_num == 0
+					mov eax, 'G'
+				.ELSE
+					mov eax, ' '
+				.ENDIF
 			.ELSEIF al == 3
 				mov eax, '-'
 			.ELSEIF al == 4
@@ -301,8 +450,9 @@ menusplash PROC uses edx
 	call gotoxy
 	mov edx, offset title_msg
 	call writestring
-	mov edx, 0f30h
-	call gotoxy
+	mov     cx, 0FH
+	mov     dx, 4240H
+	mov     ah, 86H
 	call waitmsg
 	ret
 menusplash ENDP
@@ -502,7 +652,7 @@ generateapple:
 		mov dh, al
 		call wctoi
 		mov al, world[eax]
-		.IF al == 0
+		.IF al == 0 && edx != 0Bh
 			call wctoi
 			mov world[eax], 4
 			dec ecx
@@ -663,6 +813,8 @@ camd_n:
 		mov camp.x, 150
 		mov camp.y, 150
 		mov camd, 0
+	.ELSEIF al == '/'
+	    call shoot
 	.ENDIF
 	ret
 getinput ENDP
@@ -1175,5 +1327,221 @@ getlength PROC uses ebx ecx edx edi
 	call sqrt	;result in eax
 	ret
 getlength ENDP
+
+;--------------------------------------------
+makeapple PROC uses eax ebx ecx edx esi edi
+; create apple in screen buffer (use ray-casting)
+; Input: Nothing 
+; Output: Nothing
+;--------------------------------------------
+    mov esi, camd
+    sub esi, SCREEN_W/2
+    cmp esi, 0
+    mov edi, 0
+    jl w_negative
+    jmp w_positive
+w_negative:
+    add esi, 360
+w_positive:
+    mov dl, SCREEN_W-1
+
+    mov ebx, 0
+    push ebx
+w_loop:
+    cmp dl, 0
+    jl w_loop_done    ;(counter)loop through fov angles and shoot rays
+        .IF esi >= 360
+            sub esi, 360
+        .ENDIF
+        mov eax, esi    ;save angle to eax
+        call shootray_for_apple    ;shoot ray to current direction vector
+        mov eax, ebx    ;save distance to eax
+        cmp ebx, 0
+        jl no_intersect
+            .if ecx == 4
+				mov apple_position, edi
+                pop ebx
+                .if bl == 0
+                    mov bl, dl    ;bl is right apple
+                .endif
+                mov bh, dl        ;bh is left apple
+                push ebx
+            .endif
+no_intersect:
+        inc esi
+        dec dl
+    jmp w_loop
+w_loop_done:
+    pop ebx
+    
+    .if bl != bh
+        mov cl, bl
+        sub cl, bh
+
+        mov dh, SCREEN_H/2
+        mov dl, bh
+        add dl, bl
+        shr dl, 1
+        ; 50, 40, 30, 20, 12, 6, 4
+        .if cl > 4
+            .if cl > 50
+                mov ecx, 7
+            .elseif cl > 40
+                mov ecx, 6
+            .elseif cl > 30
+                mov ecx, 5
+            .elseif cl > 20
+                mov ecx, 4
+            .elseif cl > 12
+                mov ecx, 3
+			.elseif cl > 6
+				mov ecx, 2
+			.else
+				mov ecx, 1
+            .endif
+            call fillapple
+        .endif
+    .endif
+    ret
+makeapple ENDP
+
+;--------------------------------------------
+shootray_for_apple PROC uses eax edx esi ebp
+; cast ray to selected angle 
+; Input: eax=angle
+; Output: ebx=max length, ecx=type, edi=2nd length
+;--------------------------------------------
+mov esi, eax
+	mov ebx, -1
+	mov ecx, 0
+	mov edi, 0
+	;loop through all blocks
+	mov edx, 0
+	.WHILE dh < WORLD_Y	;loop y
+		.WHILE dl < WORLD_X ;loop x
+			call wctoi	;index is in eax
+			mov position, eax
+			movzx eax, world[eax]
+			mov ebp, eax
+			.IF  eax == 1 || eax == 4	; is a block
+				call wctorc
+				;south
+				mov eax, tmp[0*TYPE vector].x
+				mov tmp[1*TYPE vector].x, eax
+				mov eax, tmp[0*TYPE vector].y
+				mov tmp[1*TYPE vector].y, eax
+				mov eax, tmp[1*TYPE vector].x
+				add eax, BLOCK_SIZE
+				mov tmp[1*TYPE vector].x, eax
+				call intersect
+				.IF eax < ebx || ebx == -1
+					mov edi, position
+					mov ebx, eax
+					mov ecx, ebp
+				.ENDIF
+				;east
+				add tmp[0*TYPE vector].x, BLOCK_SIZE
+				add tmp[1*TYPE vector].y, BLOCK_SIZE
+				call intersect
+				.IF eax < ebx || ebx == -1
+					mov edi, position
+					mov ebx, eax
+					mov ecx, ebp
+				.ENDIF
+				;south
+				add tmp[0*TYPE vector].y, BLOCK_SIZE
+				sub tmp[1*TYPE vector].x, BLOCK_SIZE
+				call intersect
+				.IF eax < ebx || ebx == -1
+					mov edi, position
+					mov ebx, eax
+					mov ecx, ebp
+				.ENDIF
+				;west
+				sub tmp[0*TYPE vector].x, BLOCK_SIZE
+				sub tmp[1*TYPE vector].y, BLOCK_SIZE
+				call intersect
+				.IF eax < ebx || ebx == -1
+					mov edi, position
+					mov ebx, eax
+					mov ecx, ebp
+				.ENDIF
+			.ENDIF
+			inc dl
+		.ENDW
+		mov dl, 0
+		inc dh
+	.ENDW
+	ret
+shootray_for_apple ENDP
+
+fillapple proc uses eax esi
+; fill apple in screen buffer (use ray-casting)
+; Input: edx(center coordinate), ecx(apple type) 
+; Output: Nothing
+;--------------------------------------------
+	mov shoot_flag, 0
+	; 將圖案字串的地址載入 esi
+	.if	ecx == 1
+		lea esi, apple_pic1     
+	.elseif ecx == 2
+		lea esi, apple_pic2
+	.elseif ecx == 3
+		lea esi, apple_pic3
+	.elseif ecx == 4
+		lea esi, apple_pic4
+	.elseif ecx == 5
+		lea esi, apple_pic5
+	.elseif ecx == 6
+		lea esi, apple_pic6
+	.elseif ecx == 7
+		lea esi, apple_pic7
+	.endif
+	
+	sub dl, [esi]
+	inc esi
+	sub dh, [esi]
+	inc esi
+
+	mov bh, dl
+loop_h:
+    lodsb                   ; 載入字元到 AL
+	mov bl, al
+
+	cmp bl, 0				; 讀完了
+	je done
+
+    cmp bl, 0dh             ; 檢查是否是換行符
+    je new_line             ; 如果是換行符，跳到新行
+
+	cmp bl, 'v'
+	je skip
+
+    ; 計算索引
+    call ctoi               ; 呼叫 ctoi，結果存入 EAX
+
+    mov pixels[eax], bl     ; 將圖案字元寫入 pixels 陣列
+	.IF ax == 0752h
+		mov shoot_flag, 1
+	.ENDIF
+skip:
+	inc dl
+	jmp loop_h 
+new_line:
+    inc dh                  ; y 值加 1
+	mov dl, bh
+    jmp loop_h				; 繼續處理
+done:
+    ret
+fillapple endp
+
+shoot PROC uses eax ebx ecx edx esi edi
+	mov eax, apple_position
+	.IF shoot_flag == 1
+		mov world[eax], 0
+	.ENDIF
+	ret
+shoot endp
+
 
 END main
