@@ -1731,9 +1731,9 @@ done:
     ret
 fillflag endp
 
-shoot PROC uses eax
+shoot PROC uses eax ebx
 	mov eax, apple_position
-	.IF shoot_flag == 1
+	.IF shoot_flag == 1 && apple_num != 0
 		mov world[eax], 0
 		dec apple_num
 	.ENDIF
